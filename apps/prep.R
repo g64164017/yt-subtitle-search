@@ -6,8 +6,10 @@ library(tuber)
 
 ## AUTHENTICATION
 ## Manage API on https://console.developers.google.com/apis/credentials
-app_id="find your own"
-app_secret="find you own"
+# app_id="find your own"
+# app_secret="find you own"
+app_id="105481264420-d9a4d48hsl833j7pquatobdm5bhttqq5.apps.googleusercontent.com"
+app_secret="FjZa5O0zl4icxfOmhyJDyH25"
 yt_oauth(app_id, app_secret, token="")
 
 ## COLECTING DOCS
@@ -23,7 +25,7 @@ length(videos$video_id)
 coll = c()
 for(vid in videos$video_id){
   # vid = as.character(res$video_id[i])
-  cap_tracks = list_caption_tracks(video_id=vid,lang = en)
+  cap_tracks = list_caption_tracks(video_id=vid,lang = "en")
   cap_id = as.character(cap_tracks$id[cap_tracks$language=="en"])[1]  # lang = "en" only
   caps = get_captions(id=cap_id)
   caps = as.character(caps)
