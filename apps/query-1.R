@@ -7,8 +7,8 @@
 # 
 # option-2: if you have your own file, choose it manuallly
 library(tm)
-library(jsonlite)
-loadData <- function() {
+
+if(!exists("tfidf_data") | !exists("IDF_t") | !exists("ds_seq")){
   x = file.choose()   # TFIDF
   setwd(dirname(x))
   tfidf_data = read.csv(x)
@@ -17,7 +17,7 @@ loadData <- function() {
   x = file.choose()   # DS_SEQ
   ds_seq = read.csv(x)
 }
-
+  
 resp <- list()
 
 weighting <- function(q="") {
@@ -46,6 +46,12 @@ weighting <- function(q="") {
   rank = sort(res[res!=0.0],decreasing = TRUE)
   n = length(rank)
   ds_seq[gsub("X","",names(rank[1:n])),c("docid","video_id","time_start","url")]
+}
+
+#* @filter cors
+cors <- function(res) {
+  res$setHeader("Access-Control-Allow-Origin", "*")
+  plumber::forward()
 }
 
 #* @get /
