@@ -1,0 +1,16 @@
+<form>
+    <input type="text" name="query" ng-model="data.query">
+    <button ng-click="search(data)">Search</button>
+</form>
+<div>
+  <table>
+    <tr ng-repeat="item in data.documents">
+      <td>{{ item.video_id }}</td>
+      <td>{{ item.docid }}</td>
+      <td>
+        <iframe allowfullscreen="" frameborder="0" height="315" ng-src="{{trustSrc(item.url)}}" width="420"></iframe>
+      </td>
+      <td>{{ item.time_start }}</td>
+    </tr>
+  </table>
+</div>
