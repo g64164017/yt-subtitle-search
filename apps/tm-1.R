@@ -12,58 +12,66 @@ require(chron)
 x = file.choose()   # frm_df.csv
 setwd(dirname(x))
 frm_df = read.csv(x)
+x = file.choose()   # data.csv
+dt = read.csv(x)
 
-tw <- data.frame(doc_id=df$video_id, text=df$cleanText)
+## SEQUENCING
+# convert to time
+t = chron(times. = frm_df$time_start)
+# calc time difference
+t_diff = diff(t)
+frm_df$time_diff = c(t_diff,chron(times. = "0:0:0"))
+frm_df[frm_df$time_diff< chron(times. = "0:0:0"),]$time_diff = chron(times. = "0:0:0")
+
+# show time_diff > 10 s
+frm_diff = frm_df[frm_df$time_diff>= chron(times. = "0:0:6"),]
+frm_diff = rbind(frm_diff , frm_df[frm_df$time_diff== chron(times. = "0:0:0"),])
+frm_diff = frm_diff[ order(frm_diff$X),]
+i=1;t=c()
+for (s in frm_diff$X){
+  t = c(t,paste(frm_df[i:s,]$text, collapse = " "))
+  frm_diff$time_start[frm_diff$X==s] = frm_df$time_start[i]
+  i=s+1
+}
+frm_diff$context = t
+ds = frm_diff[,c("docid","video_id","time_start","time_end","context")]
+t = chron(times=ds$time_start)
+ds$url = paste0("https://youtu.be/",ds$video_id
+                ,"?t=",hours(chron(times=ds$time_start)),'h'
+                ,minutes(chron(times=ds$time_start)),'m',seconds(chron(times=ds$time_start)),'s')
+write.csv("ds_sequence.csv", x=as.matrix(ds))
+
+
+# INDEXING
+getTransformations
+tw <- data.frame(doc_id=ds$docid, text=ds$context)
 k <- Corpus(DataframeSource(tw))
+k <- tm_map(k, removePunctuation)
 
 ## TF-IDF
-tdm_tfidf <- TermDocumentMatrix(k, control = list(
+tdm_tf <- TermDocumentMatrix(k, control = list(
   removePunctuation = TRUE,
   stopwords = TRUE,
   tolower = TRUE,
   stemming = FALSE,
-  stripWhitespace = TRUE,
-  weighting = weightTfIdf
+  stripWhitespace = TRUE
+  # weighting = weightTfIdf
   # weighting = function(x)
   #   weightTfIdf(x, normalize =
   #                 FALSE)
 ))
-inspect(tdm_tfidf[1:10,1:5])
-write.csv("tfidf.csv", x=as.matrix(tdm_tfidf)) 
-tdm_dict <- Terms(tdm_tfidf)
+# inspect(tdm_tf[1:10,1:5])
+# tf <- sort(rowSums(as.matrix(tdm_tf)), decreasing=TRUE)
+tf <- rowSums(as.matrix(tdm_tf))
+wf <- data.frame(word=names(tf), freq=tf)
+# findFreqTerms(tdm_tf, lowfreq=100)
+DF_t <- rowSums(as.matrix(tdm_tf)!=0)
+# DF_t <- sort(rowSums(as.matrix(tdm_tf)!=0), decreasing=TRUE)
+N <- length(colSums(as.matrix(tdm_tf)))	# ukuran korpus
+IDF_t <- log(N/DF_t)			        # nilai IDFt
 
-## QUERYING
+tfidf_data = tdm_tf * IDF_t
+# tfidf_data <- data.frame(word=names(tf*IDF_t), freq=tf*IDF_t)
+write.csv("tfidf.csv", x=as.matrix(tfidf_data)) 
+write.csv("idf.csv", x=as.matrix(IDF_t)) 
 
-q1 = "machine machine learning"
-q2 = "data mining"
-
-# # Query Weighting
-# q1_tf = strsplit(q1," ")
-# q2_tf = strsplit(q2," ")
-
-# The query below is created from words in fortune(1) and fortune(2)
-newQry <- data.frame(doc_id="query", text = q1)
-newQryC <- Corpus(DataframeSource(newQry))
-tdmNewQry <- TermDocumentMatrix(newQryC, control = list(
-  removePunctuation = TRUE,
-  stopwords = TRUE,
-  tolower = TRUE,
-  stemming = FALSE,
-  stripWhitespace = TRUE,
-  weighting = weightTf
-  # ,dictionary=dictC
-))
-dictQry <- Terms(tdmNewQry)
-
-cor_limit = 0.6
-findAssocs(tdm_tfidf,dictQry,corlimit = cor_limit)
-
-tfidf.matrix = as.matrix(tdm_tfidf)
-N = length(Docs(tdm_tfidf))
-
-query.matrix = as.matrix(tdmNewQry)
-query.matrix = scale(query.matrix, 
-                     center = FALSE,
-                     scale = sqrt(colSums(query.matrix^2)))
-
-doc.scores <- query.matrix %*% tfidf.matrix
