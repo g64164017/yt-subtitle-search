@@ -76,4 +76,3 @@ function(q="") {
 # q2 = "data mining"
 # q = "principal component analysis"
 
-
