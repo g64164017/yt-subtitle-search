@@ -16,7 +16,11 @@ angular.module('myApp.document_retrive', ['ngRoute'])
         $scope.data = {};
         var doc = response.data;
         for(var i=0; i < doc.length; i++){
-            doc[i].url = "http://www.youtube.com/embed/" + doc[i].url.substring(17, doc[i].url.length)
+            var start = doc[i].time_start;
+            console.log(start);
+            start = start.split(":");
+            start = (parseInt(start[0])*3600) + (parseInt(start[1])*60) + parseInt(start[2]);
+            doc[i].url = "http://www.youtube.com/embed/" + doc[i].video_id + "?start=" + start;
         }
         console.log(doc)
         $scope.data.documents = doc
