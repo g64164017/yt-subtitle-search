@@ -6,10 +6,8 @@ library(tuber)
 
 ## AUTHENTICATION
 ## Manage API on https://console.developers.google.com/apis/credentials
-# app_id="find your own"
-# app_secret="find you own"
-app_id="105481264420-d9a4d48hsl833j7pquatobdm5bhttqq5.apps.googleusercontent.com"
-app_secret="FjZa5O0zl4icxfOmhyJDyH25"
+app_id="find your own"
+app_secret="find you own"
 yt_oauth(app_id, app_secret, token="")
 
 ## COLECTING DOCS
